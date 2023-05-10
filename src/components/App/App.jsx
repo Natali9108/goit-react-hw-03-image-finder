@@ -25,6 +25,7 @@ export class App extends Component {
       this.setState({ status: 'pending' });
       try {
         const searchImages = await fetchImagesWithQuery(nextValue);
+
         this.setState({ images: searchImages, status: 'resolved' });
       } catch (error) {
         this.setState({ error, status: 'rejected' });

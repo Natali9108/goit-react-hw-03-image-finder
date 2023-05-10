@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const fetchImagesWithQuery = async searchQuery => {
-  const response = await axios.get('https://pixabay.com/api', {
+  const response = await axios.get('https://pixabay.com/api/', {
     params: {
       key: '34816104-0e2476e874eadf366edbb741b',
       q: `${searchQuery}`,
