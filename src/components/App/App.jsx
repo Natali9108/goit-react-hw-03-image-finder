@@ -1,41 +1,61 @@
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { Component } from 'react';
-import axios from 'axios';
-import Searchbar from '../Searchbar';
-import ImageGalerry from '../ImageGallery';
-import { Container } from './App.styled';
 
-// https://pixabay.com/api/?q=cat&page=1&key=your_key&image_type=photo&orientation=horizontal&per_page=12
+import Searchbar from '../Searchbar';
+import api from '../../servises/Api';
+import ImageGallery from '../ImageGallery';
+import { Container } from './App.styled';
+import ErrorViev from '../Errors';
+import Loader from '../Loader';
 
 export class App extends Component {
   state = {
-    image: null,
-    loading: false,
+    searchQuery: '',
+    images: [],
+    error: null,
+    status: 'idle',
   };
 
-  async componentDidMount() {
-    this.setState({ loading: true });
-    const response = await axios.get(
-      'https://pixabay.com/api/?q=cat&page=1&key=34816104-0e2476e874eadf366edbb741b&image_type=photo&orientation=horizontal&per_page=12'
-    );
-    this.setState({ image: response.data.hits, loading: false });
+  async componentDidUpdate(prevProps, prevState) {
+    const prevValue = prevState.searchQuery;
+    const nextValue = this.state.searchQuery;
+
+    if (prevValue !== nextValue) {
+      this.setState({ status: 'pending' });
+      try {
+        const searchImages = await api.fetchImagesWithQuery(nextValue);
+        this.setState({ images: searchImages, status: 'resolved' });
+      } catch (error) {
+        this.setState({ error, status: 'rejected' });
+        console.log(error);
+      }
+    }
   }
 
+  handleFormSubmit = searchQuery => {
+    this.setState({ searchQuery: searchQuery });
+  };
+
   render() {
-    const { image, loading } = this.state;
+    const { images, error, status } = this.state;
+
     return (
       <Container>
-        <Searchbar />
-        {loading && <span>Images loading....</span>}
-        {/* {image && (
-          <ul>
-            {image.map(el => (
-              <li key={el.id}>
-                <img src={el.webformatURL} alt={el.name} />
-              </li>
-            ))}
-          </ul>
-        )} */}
-        {image && <ImageGalerry images={image} />}
+        <Searchbar getImageName={this.handleFormSubmit} />
+        {status === 'idle' && (
+          <div>Please enter a value to search for images</div>
+        )}
+        {status === 'pending' && <Loader />}
+        {status === 'rejected' && <ErrorViev message={error.message} />}
+        {status === 'resolved' && images.length === 0 && (
+          <ErrorViev
+            message="No images were found for the specified parameters, please try
+              again"
+          />
+        )}
+        {status === 'resolved' && <ImageGallery images={images} />}
+        <ToastContainer />
       </Container>
     );
   }
