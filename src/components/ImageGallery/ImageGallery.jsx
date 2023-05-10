@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 // import api from '../../servises/Api';
 import { ImageItem } from './ImageGalleryItem';
 import { ImageList } from './ImageGallery.styled';
