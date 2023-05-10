@@ -3,7 +3,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Component } from 'react';
 
 import Searchbar from '../Searchbar';
-import api from '../../servises/Api';
+import { fetchImagesWithQuery } from '../../servises/Api';
 import ImageGallery from '../ImageGallery';
 import { Container } from './App.styled';
 import ErrorViev from '../Errors';
@@ -24,7 +24,7 @@ export class App extends Component {
     if (prevValue !== nextValue) {
       this.setState({ status: 'pending' });
       try {
-        const searchImages = await api.fetchImagesWithQuery(nextValue);
+        const searchImages = await fetchImagesWithQuery(nextValue);
         this.setState({ images: searchImages, status: 'resolved' });
       } catch (error) {
         this.setState({ error, status: 'rejected' });
