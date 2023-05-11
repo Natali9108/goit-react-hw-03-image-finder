@@ -1,13 +1,13 @@
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Component } from 'react';
-
 import Searchbar from '../Searchbar';
 import { fetchImagesWithQuery } from '../../servises/Api';
 import ImageGallery from '../ImageGallery';
 import { Container } from './App.styled';
 import ErrorViev from '../Errors';
 import Loader from '../Loader';
+import BtnLoadMore from '../Button';
 
 export class App extends Component {
   state = {
@@ -15,22 +15,42 @@ export class App extends Component {
     images: [],
     error: null,
     status: 'idle',
+    show: false,
+    page: 1,
   };
 
   async componentDidUpdate(prevProps, prevState) {
+    const { searchQuery, page } = this.state;
     const prevValue = prevState.searchQuery;
-    const nextValue = this.state.searchQuery;
+    const nextValue = searchQuery;
+    const prevPage = prevState.page;
+    const nextPage = page;
 
-    if (prevValue !== nextValue) {
-      this.setState({ status: 'pending' });
-      try {
-        const searchImages = await fetchImagesWithQuery(nextValue);
-
-        this.setState({ images: searchImages, status: 'resolved' });
-      } catch (error) {
-        this.setState({ error, status: 'rejected' });
-        console.log(error);
+    try {
+      if (prevValue !== nextValue) {
+        this.setState({ status: 'pending', page: 1 });
+        const searchImages = await fetchImagesWithQuery(nextValue, page);
+        this.setState({
+          images: searchImages,
+          status: 'resolved',
+          page: 1,
+          show: true,
+        });
       }
+
+      if (prevPage !== nextPage && nextPage > 1 && prevValue === nextValue) {
+        this.setState({ status: 'pending' });
+        console.log('work');
+        const loadMoreImages = await fetchImagesWithQuery(nextValue, nextPage);
+        this.setState({
+          images: loadMoreImages,
+          status: 'resolved',
+          show: true,
+        });
+      }
+    } catch (error) {
+      this.setState({ error, status: 'rejected' });
+      console.log(error);
     }
   }
 
@@ -38,8 +58,17 @@ export class App extends Component {
     this.setState({ searchQuery: searchQuery });
   };
 
+  toggle = () => {
+    this.setState(({ show }) => ({ show: !show }));
+  };
+
+  handleLoadMore = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
+    console.log('click');
+  };
+
   render() {
-    const { images, error, status } = this.state;
+    const { images, error, status, show } = this.state;
 
     return (
       <Container>
@@ -56,6 +85,10 @@ export class App extends Component {
           />
         )}
         {status === 'resolved' && <ImageGallery images={images} />}
+        {show && status === 'resolved' && images.length !== 0 && (
+          <BtnLoadMore onClick={this.handleLoadMore} />
+        )}
+
         <ToastContainer />
       </Container>
     );
