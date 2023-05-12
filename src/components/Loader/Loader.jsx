@@ -1,17 +1,17 @@
-import { RotatingLines } from 'react-loader-spinner';
-import { LoaderBox } from './Loader.styled';
+import { ThreeDots } from 'react-loader-spinner';
 
 const Loader = () => {
   return (
-    <LoaderBox>
-      <RotatingLines
-        strokeColor="#3f51b5"
-        strokeWidth="5"
-        animationDuration="0.75"
-        width="96"
-        visible={true}
-      />
-    </LoaderBox>
+    <ThreeDots
+      height="60"
+      width="100"
+      radius="9"
+      color="#3f51b5"
+      ariaLabel="three-dots-loading"
+      wrapperStyle={{ justifyContent: 'center' }}
+      wrapperClassName=""
+      visible={true}
+    />
   );
 };
 

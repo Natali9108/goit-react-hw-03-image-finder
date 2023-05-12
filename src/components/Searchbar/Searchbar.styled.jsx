@@ -9,14 +9,13 @@ export const SearchbarBox = styled.header`
   justify-content: center;
   align-items: center;
   min-height: 64px;
-  padding-right: 24px;
-  padding-left: 24px;
-  padding-top: 12px;
-  padding-bottom: 12px;
-  color: #fff;
-  background-color: #3f51b5;
-  box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
-    0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+  padding-right: ${props => props.theme.spacing(12)};
+  padding-left: ${props => props.theme.spacing(12)};
+  padding-top: ${props => props.theme.spacing(6)};
+  padding-bottom: ${props => props.theme.spacing(6)};
+  color: ${props => props.theme.colors.white};
+  background-color: ${props => props.theme.colors.blue};
+  box-shadow: ${props => props.theme.shadows.medium};
 `;
 
 export const SearchForm = styled.form`
@@ -24,7 +23,7 @@ export const SearchForm = styled.form`
   align-items: center;
   width: 100%;
   max-width: 600px;
-  background-color: #fff;
+  background-color: ${props => props.theme.colors.white};
   border-radius: 3px;
   overflow: hidden;
 `;
@@ -39,7 +38,7 @@ display: inline-block;
   background-repeat: no-repeat;
   background-position: center;
   opacity: 0.6;
-  transition: opacity 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity ${props => props.theme.animation.cubicBezier};
   cursor: pointer;
   outline: none;
 
@@ -63,13 +62,13 @@ export const SearchFormInput = styled.input`
   display: inline-block;
   width: 100%;
   font: inherit;
-  font-size: 20px;
+  font-size: ${props => props.theme.fontSizes.medium};
   border: none;
   outline: none;
-  padding-left: 4px;
-  padding-right: 4px;
+  padding-left: ${props => props.theme.spacing(2)};
+  padding-right: ${props => props.theme.spacing(2)};
 
   &::placeholder {
       font: inherit;
-      font-size: 18px;
+      font-size: ${props => props.theme.fontSizes.small};
 `;

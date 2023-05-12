@@ -29,7 +29,10 @@ class Searchbar extends Component {
     evt.preventDefault();
 
     if (searchQuery.trim() === '') {
-      toast.error('Please enter a value to search for images');
+      toast.error('Please enter a value to search for images', {
+        theme: 'colored',
+        autoClose: 2000,
+      });
       return;
     }
 

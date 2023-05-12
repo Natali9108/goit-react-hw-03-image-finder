@@ -1,7 +1,9 @@
+import { ErrorText } from './ErrorView.styled';
+
 export default function ErrorViev({ message }) {
   return (
     <div role="alert">
-      <p>{message}</p>
+      <ErrorText>{message}</ErrorText>
     </div>
   );
 }

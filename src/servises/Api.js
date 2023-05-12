@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 axios.defaults.baseURL = 'https://pixabay.com/api/';
 const API_KEY = '34816104-0e2476e874eadf366edbb741b';
-export const PER_PAGE = 12;
+const PER_PAGE = 12;
 
 export const fetchImagesWithQuery = async (searchQuery, page) => {
   const response =
