@@ -113,7 +113,7 @@ export class App extends Component {
 
         {error && <ErrorViev message={error.message} />}
 
-        {searchQuery && images.length === 0 && (
+        {!isLoading && searchQuery && images.length === 0 && (
           <ErrorViev
             message={`By request ${searchQuery} no images were found`}
           />
