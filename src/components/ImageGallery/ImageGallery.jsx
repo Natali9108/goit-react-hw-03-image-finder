@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
+import { toast } from 'react-toastify';
 import { fetchImagesWithQuery } from '../../servises/Api';
+import { PER_PAGE as paginationLimit } from '../../servises/Api';
 import { ImageItem } from './ImageGalleryItem';
 import { ImageList } from './ImageGallery.styled';
 import ErrorViev from '../Errors';
@@ -9,18 +11,17 @@ import Modal from '../Modal';
 
 export default class ImageGallery extends Component {
   state = {
-    // searchQuery: '',
     images: [],
-    error: null,
     status: 'idle',
-    showBtn: false,
+    error: null,
     showModal: false,
     page: 1,
+    total: paginationLimit,
     activeImage: 0,
   };
 
   async componentDidUpdate(prevProps, prevState) {
-    const { page } = this.state;
+    const { page, total } = this.state;
     const { searchQuery } = this.props;
     const prevValue = prevProps.searchQuery;
     const nextValue = searchQuery;
@@ -28,25 +29,34 @@ export default class ImageGallery extends Component {
     const nextPage = page;
 
     try {
+      const searchImages = await fetchImagesWithQuery(nextValue, page);
       if (prevValue !== nextValue) {
         this.setState({ status: 'pending', page: 1 });
-        const searchImages = await fetchImagesWithQuery(nextValue, page);
+
         this.setState({
-          images: searchImages,
+          images: searchImages.hits,
           status: 'resolved',
           page: 1,
           showBtn: true,
+          total: paginationLimit,
         });
       }
 
       if (prevPage !== nextPage && nextPage > 1 && prevValue === nextValue) {
         this.setState({ status: 'pending' });
-        const loadMoreImages = await fetchImagesWithQuery(nextValue, nextPage);
-        this.setState({
-          images: loadMoreImages,
+
+        this.setState(prevState => ({
+          images: searchImages.hits,
           status: 'resolved',
           showBtn: true,
-        });
+          total: prevState.total + paginationLimit,
+        }));
+        if (total >= searchImages.total) {
+          toast.info(
+            "We're sorry, but you've reached the end of search results."
+          );
+          this.setState({ status: '' });
+        }
       }
     } catch (error) {
       this.setState({ error, status: 'rejected' });
@@ -68,16 +78,17 @@ export default class ImageGallery extends Component {
     this.toggleModal();
   };
 
-  render() {
-    const { images, error, status, showBtn, showModal, activeImage } =
-      this.state;
+  filterById = () => {
+    const { images, activeImage } = this.state;
+    const filterImage = images.filter(
+      image => image.id === Number(activeImage)
+    );
 
-    const filterById = () => {
-      const filterImage = images.filter(
-        image => image.id === Number(activeImage)
-      );
-      return filterImage[0];
-    };
+    return filterImage[0];
+  };
+
+  render() {
+    const { images, error, status, showBtn, showModal } = this.state;
 
     if (status === 'idle') {
       return <div>Please enter a value to search for images</div>;
@@ -123,7 +134,7 @@ export default class ImageGallery extends Component {
             <BtnLoadMore onClick={this.handleLoadMore} />
           )}
           {showModal && (
-            <Modal image={filterById()} onClose={this.toggleModal} />
+            <Modal image={this.filterById()} onClose={this.toggleModal} />
           )}
         </>
       );
