@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { toast } from 'react-toastify';
+import PropTypes from 'prop-types';
 import { fetchImagesWithQuery } from '../../servises/Api';
 import { PER_PAGE as paginationLimit } from '../../servises/Api';
 import { ImageItem } from './ImageGalleryItem';
@@ -18,6 +19,19 @@ export default class ImageGallery extends Component {
     page: 1,
     total: paginationLimit,
     activeImage: 0,
+  };
+
+  static propTypes = {
+    message: PropTypes.string,
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        key: PropTypes.number.isRequired,
+        id: PropTypes.number.isRequired,
+        webformatURL: PropTypes.string.isRequired,
+        tags: PropTypes.string.isRequired,
+        onClick: PropTypes.func.isRequired,
+      })
+    ),
   };
 
   async componentDidUpdate(prevProps, prevState) {

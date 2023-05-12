@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { toast } from 'react-toastify';
+import PropTypes from 'prop-types';
 
 import {
   SearchbarBox,
@@ -12,6 +13,11 @@ import {
 class Searchbar extends Component {
   state = {
     searchQuery: '',
+  };
+
+  static propTypes = {
+    onSubmit: PropTypes.func,
+    onChange: PropTypes.func,
   };
 
   handleNameChange = evt => {

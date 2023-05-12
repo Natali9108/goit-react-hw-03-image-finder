@@ -1,4 +1,5 @@
 import axios from 'axios';
+import PropTypes from 'prop-types';
 
 axios.defaults.baseURL = 'https://pixabay.com/api/';
 const API_KEY = '34816104-0e2476e874eadf366edbb741b';
@@ -9,19 +10,12 @@ export const fetchImagesWithQuery = async (searchQuery, page) => {
     await axios.get(`?key=${API_KEY}&q=${searchQuery}&page=${page}&image_type=photo&orientation=horizontal&per_page=${PER_PAGE}
 
   `);
-  // {
-  //   params: {
-  //     key: '34816104-0e2476e874eadf366edbb741b',
-  //     q: `${searchQuery}`,
-  //     image_type: 'photo',
-  //     orientation: 'horizontal',
-  //     per_page: 12,
-  //   },
-  // });
-  // console.log(response.headers);
-  // console.log(response.config);
 
   return response.data;
 };
 
-// export default { fetchImagesWithQuery };
+fetchImagesWithQuery.propTypes = {
+  searchQuery: PropTypes.string.isRequired,
+  page: PropTypes.string.isRequired,
+  PER_PAGE: PropTypes.string.isRequired,
+};
