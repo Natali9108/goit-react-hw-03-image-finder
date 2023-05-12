@@ -1,4 +1,4 @@
-/* @import-normalize; /* bring in normalize.css styles */
+@import-normalize; /* bring in normalize.css styles */
 
 /* html {
   box-sizing: border-box;
@@ -27,7 +27,6 @@ img {
   max-width: 100%;
   height: auto;
 } */
-*/
 
 /*
  * Стили компонента App
@@ -162,7 +161,7 @@ img {
  * Стили компонента Modal
  */
 
-.Overlay {
+/* .Overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -178,7 +177,7 @@ img {
 .Modal {
   max-width: calc(100vw - 48px);
   max-height: calc(100vh - 24px);
-}
+} */
 
 /*
 * Стили компонента Buton (Load more)

@@ -1,79 +1,132 @@
-import React from 'react';
-// import api from '../../servises/Api';
+import React, { Component } from 'react';
+import { fetchImagesWithQuery } from '../../servises/Api';
 import { ImageItem } from './ImageGalleryItem';
 import { ImageList } from './ImageGallery.styled';
-// import ErrorViev from '../Errors';
-// import Loader from '../Loader';
+import ErrorViev from '../Errors';
+import Loader from '../Loader';
+import BtnLoadMore from '../Button';
+import Modal from '../Modal';
 
-const ImageGallery = ({ images }) => {
-  return (
-    <ImageList>
-      {images.map(({ id, webformatURL, tags }) => (
-        <ImageItem key={id} webformatURL={webformatURL} tag={tags} />
-      ))}
-    </ImageList>
-  );
-};
-export default ImageGallery;
+export default class ImageGallery extends Component {
+  state = {
+    // searchQuery: '',
+    images: [],
+    error: null,
+    status: 'idle',
+    showBtn: false,
+    showModal: false,
+    page: 1,
+    activeImage: 0,
+  };
 
-//  const ImageGallery {{images}} {
-// state = {
-//   images: [],
-//   error: null,
-//   status: 'idle',
-// };
+  async componentDidUpdate(prevProps, prevState) {
+    const { page } = this.state;
+    const { searchQuery } = this.props;
+    const prevValue = prevProps.searchQuery;
+    const nextValue = searchQuery;
+    const prevPage = prevState.page;
+    const nextPage = page;
 
-// async componentDidUpdate(prevProps, prevState) {
-//   const prevValue = prevProps.searchQuery;
-//   const nextValue = this.props.searchQuery;
+    try {
+      if (prevValue !== nextValue) {
+        this.setState({ status: 'pending', page: 1 });
+        const searchImages = await fetchImagesWithQuery(nextValue, page);
+        this.setState({
+          images: searchImages,
+          status: 'resolved',
+          page: 1,
+          showBtn: true,
+        });
+      }
 
-//   if (prevValue !== nextValue) {
-//     this.setState({ status: 'pending' });
+      if (prevPage !== nextPage && nextPage > 1 && prevValue === nextValue) {
+        this.setState({ status: 'pending' });
+        const loadMoreImages = await fetchImagesWithQuery(nextValue, nextPage);
+        this.setState({
+          images: loadMoreImages,
+          status: 'resolved',
+          showBtn: true,
+        });
+      }
+    } catch (error) {
+      this.setState({ error, status: 'rejected' });
+      console.log(error);
+    }
+  }
 
-//     try {
-//       const searchImages = await api.fetchImagesWithQuery(nextValue);
-//       this.setState({ images: searchImages, status: 'resolved' });
-//     } catch (error) {
-//       this.setState({ error, status: 'rejected' });
-//     }
-//   }
-// }
+  handleLoadMore = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
+  };
 
-// render() {
-// const { images, error, status } = this.state;
+  toggleModal = () => {
+    this.setState(({ showModal }) => ({ showModal: !showModal }));
+  };
 
-// if (status === 'idle') {
-//   return <div>Please enter a value to search for images</div>;
-// }
+  handleClickImage = evt => {
+    const { id } = evt.target;
+    this.setState({ activeImage: id });
+    this.toggleModal();
+  };
 
-// if (status === 'pending') {
-//   return <Loader />;
-// }
+  render() {
+    const { images, error, status, showBtn, showModal, activeImage } =
+      this.state;
 
-// if (status === 'rejected') {
-//   return <ErrorViev message={error.message} />;
-// }
+    const filterById = () => {
+      const filterImage = images.filter(
+        image => image.id === Number(activeImage)
+      );
+      return filterImage[0];
+    };
 
-// if (status === 'resolved') {
-//       return (
-//         <ImageList>
-//           {images.length === 0 && (
-//             <ErrorViev
-//               message="No images were found for the specified parameters, please try
-//               again"
-//             />
-//           )}
+    if (status === 'idle') {
+      return <div>Please enter a value to search for images</div>;
+    }
 
-//           {images &&
-//             images.map(image => (
-//               <ImageItem
-//                 key={image.id}
-//                 webformatURL={image.webformatURL}
-//                 tags={image.tags}
-//               />
-//             ))}
-//         </ImageList>
-//       );
-//     // }
-//   }
-// }
+    if (status === 'pending') {
+      return <Loader />;
+    }
+
+    if (status === 'rejected') {
+      return <ErrorViev message={error.message} />;
+    }
+
+    if (status === 'resolved' && images.length === 0) {
+      return (
+        <ErrorViev message="No images were found for the specified parameters, please try again" />
+      );
+    }
+
+    if (status === 'resolved') {
+      return (
+        <>
+          <ImageList>
+            {images.length === 0 && (
+              <ErrorViev
+                message="No images were found for the specified parameters, please try
+              again"
+              />
+            )}
+
+            {images &&
+              images.map(image => (
+                <ImageItem
+                  key={image.id}
+                  id={image.id}
+                  webformatURL={image.webformatURL}
+                  tags={image.tags}
+                  onClick={this.handleClickImage}
+                />
+              ))}
+          </ImageList>
+          {showBtn && status === 'resolved' && images.length !== 0 && (
+            <BtnLoadMore onClick={this.handleLoadMore} />
+          )}
+          {showModal && (
+            <Modal image={filterById()} onClose={this.toggleModal} />
+          )}
+        </>
+      );
+    }
+  }
+}
