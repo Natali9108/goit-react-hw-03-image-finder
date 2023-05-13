@@ -3,12 +3,13 @@ import 'react-toastify/dist/ReactToastify.min.css';
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { fetchImagesWithQuery } from '../../servises/Api';
-import Searchbar from '../Searchbar';
-import ImageGallery from '../ImageGallery';
-import ErrorViev from '../Errors';
-import Loader from '../Loader';
-import BtnLoadMore from '../Button';
-import Modal from '../Modal';
+import {
+  BtnLoadMore,
+  ImageGallery,
+  Loader,
+  Modal,
+  Searchbar,
+} from 'components';
 import { Container, MessageText } from './App.styled';
 
 export class App extends Component {
@@ -16,7 +17,8 @@ export class App extends Component {
     searchQuery: '',
     images: [],
     isLoading: false,
-    error: null,
+    showBtn: false,
+    error: '',
     showModal: false,
     page: 1,
     total: 0,
@@ -37,7 +39,7 @@ export class App extends Component {
   };
 
   async componentDidUpdate(__, prevState) {
-    const { page, searchQuery, images } = this.state;
+    const { page, searchQuery } = this.state;
     const prevValue = prevState.searchQuery;
     const nextValue = searchQuery;
     const prevPage = prevState.page;
@@ -48,11 +50,13 @@ export class App extends Component {
         this.setState({ isLoading: true });
         const searchImages = await fetchImagesWithQuery(nextValue, page);
         this.setState(prevState => ({
-          images: [...images, ...searchImages.hits],
+          images: [...prevState.images, ...searchImages.hits],
           isLoading: false,
           total: searchImages.total,
+          showBtn: page < Math.ceil(searchImages.total / 12),
         }));
       }
+
       if (this.state.images.length > prevState.images.length) {
         const interval = setInterval(() => {
           window.scrollBy(0, 10);
@@ -66,7 +70,6 @@ export class App extends Component {
       }
     } catch (error) {
       this.setState({ error });
-      console.log(error);
     }
   }
 
@@ -98,25 +101,23 @@ export class App extends Component {
   };
 
   render() {
-    const { images, error, showModal, searchQuery, isLoading, total } =
+    const { images, error, showBtn, showModal, searchQuery, isLoading, total } =
       this.state;
 
     return (
       <Container>
         <Searchbar getImageName={this.handleFormSubmit} images={images} />
 
-        {!searchQuery && images.length === 0 && (
-          <div>
-            <MessageText>Please enter a value to search for images</MessageText>
-          </div>
+        {!searchQuery && !images.length && (
+          <MessageText>Please enter a value to search for images</MessageText>
         )}
 
-        {error && <ErrorViev message={error.message} />}
+        {error && <MessageText>{error.message}... 😭 </MessageText>}
 
-        {!isLoading && searchQuery && images.length === 0 && (
-          <ErrorViev
-            message={`By request ${searchQuery} no images were found`}
-          />
+        {!isLoading && searchQuery && !images.length && (
+          <MessageText>
+            By request {searchQuery} no images were found... 😭
+          </MessageText>
         )}
 
         {images.length > 0 && (
@@ -125,29 +126,18 @@ export class App extends Component {
 
         {isLoading && <Loader />}
 
-        {!isLoading && images.length > 0 && images.length < total && (
-          <BtnLoadMore onClick={this.handleLoadMore} />
-        )}
+        {showBtn && <BtnLoadMore onClick={this.handleLoadMore} />}
 
         {images.length > 0 && total === images.length && (
-          <ErrorViev message="We're sorry, but you've reached the end of search results." />
+          <MessageText>
+            We're sorry, but you've reached the end of search results.
+          </MessageText>
         )}
 
         {showModal && (
           <Modal image={this.filterById()} onClose={this.toggleModal} />
         )}
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="colored"
-        />
+        <ToastContainer />
       </Container>
     );
   }

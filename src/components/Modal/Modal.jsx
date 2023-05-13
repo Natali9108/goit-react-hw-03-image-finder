@@ -5,7 +5,7 @@ import { Overlay, ImageModal } from './Modal.styled';
 
 const modalRoot = document.querySelector('#modal-root');
 
-export default class Modal extends Component {
+export class Modal extends Component {
   static propTypes = {
     onClick: PropTypes.func,
     src: PropTypes.string,

@@ -10,7 +10,7 @@ import {
   SearchFormInput,
 } from './Searchbar.styled';
 
-class Searchbar extends Component {
+export class Searchbar extends Component {
   state = {
     searchQuery: '',
   };
@@ -41,6 +41,7 @@ class Searchbar extends Component {
   };
 
   render() {
+    const { searchQuery } = this.state;
     return (
       <SearchbarBox>
         <SearchForm onSubmit={this.handleSearch}>
@@ -53,6 +54,7 @@ class Searchbar extends Component {
             autoComplete="off"
             autoFocus
             placeholder="Search images and photos"
+            value={searchQuery}
             onChange={this.handleNameChange}
           />
         </SearchForm>
@@ -60,5 +62,3 @@ class Searchbar extends Component {
     );
   }
 }
-
-export default Searchbar;

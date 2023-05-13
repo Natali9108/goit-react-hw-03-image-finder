@@ -2,7 +2,7 @@ import React from 'react';
 import { ImageItem } from './ImageGalleryItem';
 import { ImageList } from './ImageGallery.styled';
 
-const ImageGallery = ({ images, onClick }) => {
+export const ImageGallery = ({ images, onClick }) => {
   return (
     <ImageList>
       {images.map(({ id, webformatURL, tags }) => (
@@ -17,5 +17,3 @@ const ImageGallery = ({ images, onClick }) => {
     </ImageList>
   );
 };
-
-export default ImageGallery;
