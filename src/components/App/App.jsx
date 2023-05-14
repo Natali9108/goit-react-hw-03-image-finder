@@ -28,7 +28,7 @@ export class App extends Component {
   };
 
   async componentDidUpdate(__, prevState) {
-    const { page, searchQuery, images } = this.state;
+    const { page, searchQuery } = this.state;
     const prevValue = prevState.searchQuery;
     const nextValue = searchQuery;
     const prevPage = prevState.page;
