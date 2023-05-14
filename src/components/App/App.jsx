@@ -1,8 +1,9 @@
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 import { Component } from 'react';
-import PropTypes from 'prop-types';
-import { fetchImagesWithQuery } from '../../servises/Api';
+
+import * as ApiServise from '../../servises/Api';
+
 import {
   BtnLoadMore,
   ImageGallery,
@@ -23,58 +24,48 @@ export class App extends Component {
     page: 1,
     total: 0,
     activeImage: 0,
-  };
-
-  static propTypes = {
-    message: PropTypes.string,
-    images: PropTypes.arrayOf(
-      PropTypes.shape({
-        key: PropTypes.number.isRequired,
-        id: PropTypes.number.isRequired,
-        webformatURL: PropTypes.string.isRequired,
-        tags: PropTypes.string.isRequired,
-        onClick: PropTypes.func.isRequired,
-      })
-    ),
+    isEmpty: false,
   };
 
   async componentDidUpdate(__, prevState) {
-    const { page, searchQuery } = this.state;
+    const { page, searchQuery, images } = this.state;
     const prevValue = prevState.searchQuery;
     const nextValue = searchQuery;
     const prevPage = prevState.page;
     const nextPage = page;
 
-    try {
-      if (prevValue !== nextValue || prevPage !== nextPage) {
-        this.setState({ isLoading: true });
-        const searchImages = await fetchImagesWithQuery(nextValue, page);
-        this.setState(prevState => ({
-          images: [...prevState.images, ...searchImages.hits],
-          isLoading: false,
-          total: searchImages.total,
-          showBtn: page < Math.ceil(searchImages.total / 12),
-        }));
-      }
-
-      if (this.state.images.length > prevState.images.length) {
-        const interval = setInterval(() => {
-          window.scrollBy(0, 10);
-          if (
-            document.documentElement.clientHeight + window.pageYOffset ===
-            document.body.offsetHeight
-          ) {
-            clearInterval(interval);
+    if (prevValue !== nextValue || prevPage !== nextPage) {
+      this.setState({ isLoading: true });
+      ApiServise.fetchImagesWithQuery(nextValue, page)
+        .then(({ hits, total, totalHits }) => {
+          if (!hits.length) {
+            this.setState({ isEmpty: true });
           }
-        }, 10);
-      }
-    } catch (error) {
-      this.setState({ error });
+
+          this.setState(prevState => ({
+            images: [...prevState.images, ...hits],
+            total: total,
+            showBtn: page < Math.ceil(total / ApiServise.PER_PAGE),
+          }));
+        })
+        .catch(error => this.setState({ error }))
+        .finally(this.setState({ isLoading: false }));
     }
   }
 
   handleFormSubmit = searchQuery => {
-    this.setState({ searchQuery: searchQuery, page: 1, images: [] });
+    this.setState({
+      searchQuery: searchQuery,
+      page: 1,
+      images: [],
+      isLoading: false,
+      showBtn: false,
+      error: '',
+      showModal: false,
+      total: 0,
+      activeImage: 0,
+      isEmpty: false,
+    });
   };
 
   handleLoadMore = () => {
@@ -85,24 +76,23 @@ export class App extends Component {
     this.setState(({ showModal }) => ({ showModal: !showModal }));
   };
 
-  handleClickImage = evt => {
-    const { id } = evt.target;
-    this.setState({ activeImage: id });
+  handleClickImage = image => {
+    this.setState({ activeImage: image });
     this.toggleModal();
   };
 
-  filterById = () => {
-    const { images, activeImage } = this.state;
-    const filterImage = images.filter(
-      image => image.id === Number(activeImage)
-    );
-
-    return filterImage[0];
-  };
-
   render() {
-    const { images, error, showBtn, showModal, searchQuery, isLoading, total } =
-      this.state;
+    const {
+      images,
+      error,
+      showBtn,
+      showModal,
+      searchQuery,
+      isLoading,
+      total,
+      activeImage,
+      isEmpty,
+    } = this.state;
 
     return (
       <Container>
@@ -114,7 +104,7 @@ export class App extends Component {
 
         {error && <MessageText>{error.message}... 😭 </MessageText>}
 
-        {!isLoading && searchQuery && !images.length && (
+        {isEmpty && (
           <MessageText>
             By request {searchQuery} no images were found... 😭
           </MessageText>
@@ -128,15 +118,13 @@ export class App extends Component {
 
         {showBtn && <BtnLoadMore onClick={this.handleLoadMore} />}
 
-        {images.length > 0 && total === images.length && (
+        {images.length && total === images.length && (
           <MessageText>
             We're sorry, but you've reached the end of search results.
           </MessageText>
         )}
 
-        {showModal && (
-          <Modal image={this.filterById()} onClose={this.toggleModal} />
-        )}
+        {showModal && <Modal image={activeImage} onClose={this.toggleModal} />}
         <ToastContainer />
       </Container>
     );
